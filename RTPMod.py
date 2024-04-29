@@ -75,9 +75,10 @@ class DataBase:
                     """
         try:
             self.cur.execute(query, id)
-            fetched = self.cur.fetchmany()
+            fetched = self.cur.fetchall()
             print("Data fetching...")
-            return fetched
+            print(f"Size array: ", len(fetched))
+            return [things for things in fetched[0:len(fetched)-1]]
         except:
             print('error occured please restart')
 
@@ -91,11 +92,12 @@ if __name__ == "__main__":
 
     module.insert({"titled" :"MathA: Randomization", "gradeLvl" : 10, "quarter" : 2, "number" : 4, "year" : 2024})
     module.insert({"titled" :"MathB: Log and Natural Log", "gradeLvl" : 10, "quarter" : 3, "number" : 1, "year" : 2022})
+    module.insert({"titled": "ambot", "gradeLvl":10, 'quarter': 3, 'number': 1, 'year': 2022}) 
 
 
     tThing = module.get({"titled": "MathA: Randomization"})
-    pThing = list(tThing[0])
-    print(pThing)
+    tThree = module.get({"gradeLvl": 10})
 
+    print(tThing)
+    print(tThree)
 
-    
