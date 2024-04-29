@@ -12,16 +12,16 @@ class DataBase:
 
     #initiation of database
     def create(self):
-        self.cur.execute
-        ("""
+
+        self.cur.execute("""
 
         CREATE TABLE IF NOT EXISTS 
-            modules(
-                name TEXT, 
-                gradeLvl INTEGER, 
-                quarter INTEGER, 
-                number INTEGER, 
-                year INTEGER
+            printed(
+            titled TEXT, 
+            gradeLvl INTEGER, 
+            quarter INTEGER, 
+            number INTEGER, 
+            year INTEGER
             )
 
          """)
@@ -36,28 +36,33 @@ class DataBase:
 
         cols = ", ".join(data.keys())
         print(cols)
-        vals = ", ".join(["?"]*len(data))
-        print(vals)
+        vals = ", ".join(["?"] * len(data))
 
         query = f"""
-                INSERT INTO modules ({cols})
+                INSERT INTO Printed ({cols})
                 VALUES ({vals})
                 """
+
         try: 
-            self.cur.execute(query, list(data.values()) )
+            self.cur.execute(query, tuple(data.values()) )
             self.dbLib.commit()
             print("data successfully stored")
+
         except sql.Error as err:
-            print(f"error occured refer back to source, {err}")
+            print(f"\nerror occured refer back to source, {err}")
 
 
 
 
-    def get(self, criteria=None):
+    def get(self, criteria):
         clause = []
         id = []
+
+        if not isinstance(criteria, dict):
+            raise ValueError("Data must be a dictionary containing column names and values")
+
         if criteria is None:
-            query = "SELECT * FROM modules"
+            query = "SELECT * FROM Printed"
 
         else:
             for param, val in criteria.items():
@@ -65,12 +70,12 @@ class DataBase:
                 id.append(val)
 
             query = f"""
-            SELECT * FROM modules
+            SELECT * FROM Printed 
                 WHERE {','.join(clause)} 
                     """
         try:
-            self.cur.execute(query, id if id else [])
-            fetched = self.cur.fetchall()
+            self.cur.execute(query, id)
+            fetched = self.cur.fetchmany()
             print("Data fetching...")
             return fetched
         except:
@@ -82,12 +87,15 @@ class DataBase:
 
 if __name__ == "__main__":
     module = DataBase()
-    module.create()
+    DataBase().create()
 
-    module.insert(name = "MathA: Randomization", gradeLvl = 10, quarter = 2, number = 4, year = 2024)
+    module.insert({"titled" :"MathA: Randomization", "gradeLvl" : 10, "quarter" : 2, "number" : 4, "year" : 2024})
+    module.insert({"titled" :"MathB: Log and Natural Log", "gradeLvl" : 10, "quarter" : 3, "number" : 1, "year" : 2022})
 
-    tThing = module.get(quarter="4")
-    print(tThing)
+
+    tThing = module.get({"titled": "MathA: Randomization"})
+    pThing = list(tThing[0])
+    print(pThing)
 
 
     
