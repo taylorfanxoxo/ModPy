@@ -7,7 +7,8 @@ class DataBase:
         self.dbLib = sql.connect("data.db")
         self.cur = self.dbLib.cursor()
 
-    def __del__(self):
+    def close(self):
+        self.cur.close()
         self.dbLib.close()
 
     #initiation of database
@@ -29,24 +30,52 @@ class DataBase:
         self.dbLib.commit()
 
 
-    def insert(self, data):
-
+    def update(self, data):
         if not isinstance(data, dict):
             raise ValueError("Data must be a dictionary containing column names and values")
 
         cols = ", ".join(data.keys())
-        print(cols)
         vals = ", ".join(["?"] * len(data))
+        
+        check = self.cur.execute(f"SELECT COUNT(titled) FROM Printed WHERE titled='{data.get('titled')}' " ).fetchone()[0]
 
         query = f"""
                 INSERT INTO Printed ({cols})
                 VALUES ({vals})
                 """
+        
+        try:
+            if not check:
+                self.cur.execute(query, tuple(data.values()) )
+                self.dbLib.commit()
+                print("data successfully stored")
+            else:
+                #Updating Table Code here
+                checkTwo = self.cur.execute(f"""
+                    SELECT * FROM Printed 
+                    WHERE titled = '{data.get('titled')}' 
+                """).fetchone()
+                update = False
 
-        try: 
-            self.cur.execute(query, tuple(data.values()) )
-            self.dbLib.commit()
-            print("data successfully stored")
+                for pos,(_, val) in enumerate(data.items()):
+                    if checkTwo[pos] != val:
+                        update = True
+                        break
+
+                if update:
+                    valsPair = [f"{param}=?" for param in data.keys()]
+                    print('phase2')
+                    updateQuery = f"""
+                        UPDATE Printed
+                        SET {", ".join(valsPair)} 
+                        WHERE titled = '{data.get('titled')}'
+                    """
+                    self.cur.execute(updateQuery, tuple(data.values()))
+                    self.dbLib.commit()
+                    print("successfully updated")
+
+                else:
+                    print("data row exists moving ~~ ~~ ~~ ~~")
 
         except sql.Error as err:
             print(f"\nerror occured refer back to source, {err}")
@@ -66,38 +95,43 @@ class DataBase:
 
         else:
             for param, val in criteria.items():
-                clause.append(f"{param} = ?")
+                clause.append(f"{param}=?")
                 id.append(val)
 
             query = f"""
             SELECT * FROM Printed 
-                WHERE {','.join(clause)} 
-                    """
+                WHERE ({' AND '.join(clause)}) 
+                     """
         try:
             self.cur.execute(query, id)
             fetched = self.cur.fetchall()
             print("Data fetching...")
             print(f"Size array: ", len(fetched))
-            return [things for things in fetched[0:len(fetched)-1]]
-        except:
-            print('error occured please restart')
+            return [things for things in fetched[0:len(fetched)]]
+        except sql.Error as err:
+            print(f'error occured please restart: {err}')
 
+    def identities(self):
+        self.cur.execute("SELECT COUNT(*) FROM Printed")
+        return self.cur.fetchall()[0][0]
 
 
 ##########################################################################
 
 if __name__ == "__main__":
     module = DataBase()
-    DataBase().create()
+    module.create()
 
-    module.insert({"titled" :"MathA: Randomization", "gradeLvl" : 10, "quarter" : 2, "number" : 4, "year" : 2024})
-    module.insert({"titled" :"MathB: Log and Natural Log", "gradeLvl" : 10, "quarter" : 3, "number" : 1, "year" : 2022})
-    module.insert({"titled": "ambot", "gradeLvl":10, 'quarter': 3, 'number': 1, 'year': 2022}) 
+    module.update({"titled" :"MathA: Randomization", "gradeLvl" : 10, "quarter" : 2, "number" : 4, "year" : 2024})
+    module.update({"titled" :"MathB: Log and Natural Log", "gradeLvl" : 10, "quarter" : 3, "number" : 1, "year" : 2022})
+    module.update({"titled": "ambot", "gradeLvl":10, 'quarter': 3, 'number': 1, 'year': 2022}) 
+    module.update({'titled' : "baynte", 'gradeLvl': 10, 'year':2022})
+    module.update({'titled': 'test'})
 
+    tThing = module.get({"year":2022,"gradeLvl":10})
 
-    tThing = module.get({"titled": "MathA: Randomization"})
-    tThree = module.get({"gradeLvl": 10})
 
     print(tThing)
-    print(tThree)
+    print(module.identities())
 
+    module.close()
