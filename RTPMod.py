@@ -110,28 +110,48 @@ class DataBase:
             return [things for things in fetched[0:len(fetched)]]
         except sql.Error as err:
             print(f'error occured please restart: {err}')
+    
+    identities = lambda self: self.cur.execute("SELECT COUNT(*) FROM Printed") 
 
     def identities(self):
         self.cur.execute("SELECT COUNT(*) FROM Printed")
         return self.cur.fetchall()[0][0]
+
+    def remove(self, id):
+        query = f"""
+            SELECT * FROM Printed
+                REMOVE * WHERE titled=?
+        """
+        try:
+            self.cur.execute(query, id.get('titled'))
+            self.dbLib.commit()
+        except sql.Error as err:
+            print(f"Cannot remove, invalid statements or syntax used: {err}")
 
 
 ##########################################################################
 
 if __name__ == "__main__":
     module = DataBase()
+    test = DataBase()
+    test.create()
     module.create()
 
+    test.update({"titled":'pizza', 'gradeLvl': 10, 'quarter': 9})
     module.update({"titled" :"MathA: Randomization", "gradeLvl" : 10, "quarter" : 2, "number" : 4, "year" : 2024})
     module.update({"titled" :"MathB: Log and Natural Log", "gradeLvl" : 10, "quarter" : 3, "number" : 1, "year" : 2022})
     module.update({"titled": "ambot", "gradeLvl":10, 'quarter': 3, 'number': 1, 'year': 2022}) 
     module.update({'titled' : "baynte", 'gradeLvl': 10, 'year':2022})
     module.update({'titled': 'test'})
+    module.remove({"titled": 'test'})
 
     tThing = module.get({"year":2022,"gradeLvl":10})
+    ttThing = test.get({'gradeLvl':10})
 
 
-    print(tThing)
+    print('modules ==>', tThing)
+    print('food ==>', ttThing)
     print(module.identities())
+    print(test.identities())
 
     module.close()
