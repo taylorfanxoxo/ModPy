@@ -6,3 +6,6 @@ def Main():
     root.geometry("700x700")
     root.title("Test")
 
+
+if __name__ == "__main__":
+    Main()
