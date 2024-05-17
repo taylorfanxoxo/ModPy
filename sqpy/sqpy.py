@@ -21,6 +21,7 @@ class DataBase:
             student TEXT, 
             gradeLvl INTEGER, 
             section TEXT, 
+            date TEXT,
             time TEXT 
             ) 
             """)
@@ -133,7 +134,7 @@ if __name__ == "__main__":
     module = DataBase()
     module.create()
 
-    module.update({"student":"Rafe", 'gradeLvl':10, 'section':"Cepheus", 'time':'3:30am'})
+    module.update({"student":"Rafe", 'gradeLvl':10, 'section':"Cepheus", 'date':'2/3/2023','time':'3:30am'})
     print(module.get({'student':'Rafe', 'gradeLvl': 10}))
     print(module.identities())
 
