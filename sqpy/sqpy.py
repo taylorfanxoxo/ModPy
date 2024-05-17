@@ -15,17 +15,14 @@ class DataBase:
     def create(self):
 
         self.cur.execute("""
-
         CREATE TABLE IF NOT EXISTS 
-            printed(
-            titled TEXT, 
+            Printed(
+            student TEXT, 
             gradeLvl INTEGER, 
-            quarter INTEGER, 
-            number INTEGER, 
-            year INTEGER
-            )
-
-         """)
+            section TEXT, 
+            time TEXT 
+            ) 
+            """)
         
         self.dbLib.commit()
 
@@ -37,7 +34,7 @@ class DataBase:
         cols = ", ".join(data.keys())
         vals = ", ".join(["?"] * len(data))
         
-        check = self.cur.execute(f"SELECT COUNT(titled) FROM Printed WHERE titled='{data.get('titled')}' " ).fetchone()[0]
+        check = self.cur.execute(f"SELECT COUNT(student) FROM Printed WHERE student='{data.get('student')}' " ).fetchone()[0]
 
         query = f"""
                 INSERT INTO Printed ({cols})
@@ -53,7 +50,7 @@ class DataBase:
                 #Updating Table Code here
                 checkTwo = self.cur.execute(f"""
                     SELECT * FROM Printed 
-                    WHERE titled = '{data.get('titled')}' 
+                    WHERE student = '{data['student']}' 
                 """).fetchone()
                 update = False
 
@@ -68,7 +65,7 @@ class DataBase:
                     updateQuery = f"""
                         UPDATE Printed
                         SET {", ".join(valsPair)} 
-                        WHERE titled = '{data.get('titled')}'
+                        WHERE student = '{data.get('student')}'
                     """
                     self.cur.execute(updateQuery, tuple(data.values()))
                     self.dbLib.commit()
@@ -120,10 +117,10 @@ class DataBase:
     def remove(self, id):
         query = f"""
             SELECT * FROM Printed
-                REMOVE * WHERE titled=?
+            REMOVE WHERE student={id['student']} 
         """
         try:
-            self.cur.execute(query, id.get('titled'))
+            self.cur.execute(query)
             self.dbLib.commit()
         except sql.Error as err:
             print(f"Cannot remove, invalid statements or syntax used: {err}")
@@ -133,25 +130,13 @@ class DataBase:
 
 if __name__ == "__main__":
     module = DataBase()
-    test = DataBase()
-    test.create()
     module.create()
 
-    test.update({"titled":'pizza', 'gradeLvl': 10, 'quarter': 9})
-    module.update({"titled" :"MathA: Randomization", "gradeLvl" : 10, "quarter" : 2, "number" : 4, "year" : 2024})
-    module.update({"titled" :"MathB: Log and Natural Log", "gradeLvl" : 10, "quarter" : 3, "number" : 1, "year" : 2022})
-    module.update({"titled": "ambot", "gradeLvl":10, 'quarter': 3, 'number': 1, 'year': 2022}) 
-    module.update({'titled' : "baynte", 'gradeLvl': 10, 'year':2022})
-    module.update({'titled': 'test'})
-    module.remove({"titled": 'test'})
-
-    tThing = module.get({"year":2022,"gradeLvl":10})
-    ttThing = test.get({'gradeLvl':10})
-
-
-    print('modules ==>', tThing)
-    print('food ==>', ttThing)
+    module.update({"student":"Rafe", 'gradeLvl':10, 'section':"Cepheus", 'time':'3:30am'})
+    print(module.get({'student':'Rafe', 'gradeLvl':10}))
     print(module.identities())
-    print(test.identities())
+
+    module.remove({'student':'Rafe'})
+    print(module.get({'student':'Rafe'}))
 
     module.close()
