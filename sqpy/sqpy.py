@@ -130,6 +130,8 @@ class DataBase:
 
 ##########################################################################
 
+
+##TEST OF THE SQPY##
 if __name__ == "__main__":
     module = DataBase()
     module.create()
