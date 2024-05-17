@@ -12,9 +12,8 @@ class DataBase:
         self.cur.close()
         self.dbLib.close()
 
-    #initiation of database
+    # Initiation of database
     def create(self):
-
         self.cur.execute("""
         CREATE TABLE IF NOT EXISTS 
             Printed(
@@ -27,7 +26,6 @@ class DataBase:
             """)
         
         self.dbLib.commit()
-
 
     def update(self, data):
         if not isinstance(data, dict):
@@ -47,9 +45,9 @@ class DataBase:
             if not check:
                 self.cur.execute(query, tuple(data.values()) )
                 self.dbLib.commit()
-                print("data successfully stored")
+                print("Data successfully stored")
             else:
-                #Updating Table Code here
+                # Updating Table Code here
                 checkTwo = self.cur.execute(f"""
                     SELECT * FROM Printed 
                     WHERE student = '{data['student']}' 
@@ -71,16 +69,12 @@ class DataBase:
                     """
                     self.cur.execute(updateQuery, tuple(data.values()))
                     self.dbLib.commit()
-                    print("successfully updated")
-
+                    print("Successfully updated")
                 else:
-                    print("data row exists moving ~~ ~~ ~~ ~~")
+                    print("Data row exists moving ~~ ~~ ~~ ~~")
 
         except sql.Error as err:
-            print(f"\nerror occured refer back to source, {err}")
-
-
-
+            print(f"\nError occurred refer back to source, {err}")
 
     def get(self, criteria):
         clause = []
@@ -91,7 +85,6 @@ class DataBase:
 
         if criteria is None:
             query = "SELECT * FROM Printed"
-
         else:
             for param, val in criteria.items():
                 clause.append(f"{param}=?")
@@ -108,10 +101,8 @@ class DataBase:
             print(f"Size array: ", len(fetched))
             return [things for things in fetched[0:len(fetched)]]
         except sql.Error as err:
-            print(f'error occured please restart: {err}')
+            print(f'Error occurred please restart: {err}')
     
-    identities = lambda self: self.cur.execute("SELECT COUNT(*) FROM Printed") 
-
     def identities(self):
         self.cur.execute("SELECT COUNT(*) FROM Printed")
         return self.cur.fetchall()[0][0]
@@ -119,7 +110,7 @@ class DataBase:
     def remove(self, id):
         query = f"""
             DELETE FROM Printed
-            WHERE student={id['student']} 
+            WHERE student='{id['student']}' 
         """
         try:
             self.cur.execute(query)
@@ -131,10 +122,19 @@ class DataBase:
 ##########################################################################
 
 
-##TEST OF THE SQPY##
+## TEST OF THE SQPY ##
 if __name__ == "__main__":
     module = DataBase()
     module.create()
+
+    module.update({"student":"Rafe", 'gradeLvl':10, 'section':"Cepheus", 'date':'2/3/2023','time':'3:30am'})
+    print(module.get({'student':'Rafe', 'gradeLvl': 10}))
+    print(module.identities())
+
+    module.remove({'student':'Rafe'})
+    print(module.get({'student':'Rafe'}))
+
+    module.close()
 
     module.update({"student":"Rafe", 'gradeLvl':10, 'section':"Cepheus", 'date':'2/3/2023','time':'3:30am'})
     print(module.get({'student':'Rafe', 'gradeLvl': 10}))
