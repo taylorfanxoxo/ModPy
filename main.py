@@ -1,4 +1,4 @@
-from sqpy.RTPMod import DataBase
+from sqpy.sqpy import DataBase
 import tkinter as Tk
 
 def Main():

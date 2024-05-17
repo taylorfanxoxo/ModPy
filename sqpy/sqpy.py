@@ -1,4 +1,5 @@
 import sqlite3 as sql
+from typing import Any
 
 ##########################################################################
 
@@ -116,8 +117,8 @@ class DataBase:
 
     def remove(self, id):
         query = f"""
-            SELECT * FROM Printed
-            REMOVE WHERE student={id['student']} 
+            DELETE FROM Printed
+            WHERE student={id['student']} 
         """
         try:
             self.cur.execute(query)
@@ -133,7 +134,7 @@ if __name__ == "__main__":
     module.create()
 
     module.update({"student":"Rafe", 'gradeLvl':10, 'section':"Cepheus", 'time':'3:30am'})
-    print(module.get({'student':'Rafe', 'gradeLvl':10}))
+    print(module.get({'student':'Rafe', 'gradeLvl': 10}))
     print(module.identities())
 
     module.remove({'student':'Rafe'})
